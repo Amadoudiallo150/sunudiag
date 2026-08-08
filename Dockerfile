@@ -14,7 +14,7 @@ COPY frontend/ ./frontend/
 COPY models/ ./models/
 
 # 5. Le port ecoute par Hugging Face Spaces
-EXPOSE 10000
+EXPOSE 7860
 
 # 6. La commande lancee au demarrage du conteneur
-CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "10000"]
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "7860"]

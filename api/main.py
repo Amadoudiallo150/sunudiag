@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 import joblib
 import pandas as pd
 from fastapi.middleware.cors import CORSMiddleware
-
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI(
     title="SunuDiag API",
@@ -49,3 +49,5 @@ def predict(patient: Patient):
         "pre_diagnostic": "A ORIENTER" if proba >= 0.5 else "risque faible",
         "avertissement": "Ne remplace pas un avis medical.",
     }
+# Servir le frontend a la racine -- TOUJOURS en dernier
+app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")

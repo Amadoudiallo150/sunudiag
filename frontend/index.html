@@ -6,62 +6,65 @@
 <title>SunuDiag - Pre-diagnostic du paludisme</title>
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-100 min-h-screen p-4">
-<div class="max-w-md mx-auto">
+<body class="bg-gradient-to-br from-emerald-50 via-slate-50 to-blue-50 min-h-screen p-4 flex items-center justify-center">
+<div class="max-w-md w-full mx-auto">
   <header class="text-center mb-6">
-    <h1 class="text-3xl font-bold text-slate-800">SunuDiag</h1>
-    <p class="text-slate-600">Pre-diagnostic du paludisme</p>
+    <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-emerald-600 shadow-lg mb-3">
+      <span class="text-2xl">🩺</span>
+    </div>
+    <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">SunuDiag</h1>
+    <p class="text-slate-500 text-sm mt-1">Pre-diagnostic du paludisme</p>
   </header>
 
-  <div class="bg-white rounded-xl shadow p-6 space-y-4">
+  <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/60 p-6 space-y-5 border border-slate-100">
     <div>
-      <label for="age" class="block text-sm font-medium text-slate-700">Age (annees)</label>
+      <label for="age" class="block text-sm font-semibold text-slate-700 mb-1">Age (annees)</label>
       <input type="number" id="age" value="34"
-        class="mt-1 w-full rounded-lg border border-slate-300 p-2">
+        class="w-full rounded-xl border border-slate-200 p-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition">
     </div>
 
     <div>
-      <label for="fievre" class="block text-sm font-medium text-slate-700">Temperature (C)</label>
+      <label for="fievre" class="block text-sm font-semibold text-slate-700 mb-1">Temperature (C)</label>
       <input type="number" id="fievre" step="0.1" value="39.2"
-        class="mt-1 w-full rounded-lg border border-slate-300 p-2">
+        class="w-full rounded-xl border border-slate-200 p-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition">
     </div>
 
     <div>
-      <label for="glycemie" class="block text-sm font-medium text-slate-700">Glycemie (mmol/L)</label>
+      <label for="glycemie" class="block text-sm font-semibold text-slate-700 mb-1">Glycemie (mmol/L)</label>
       <input type="number" id="glycemie" step="0.1" value="5.8"
-        class="mt-1 w-full rounded-lg border border-slate-300 p-2">
+        class="w-full rounded-xl border border-slate-200 p-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition">
     </div>
 
     <div>
-      <label for="hemoglobine" class="block text-sm font-medium text-slate-700">Hemoglobine (g/dL)</label>
+      <label for="hemoglobine" class="block text-sm font-semibold text-slate-700 mb-1">Hemoglobine (g/dL)</label>
       <input type="number" id="hemoglobine" step="0.1" value="13.1"
-        class="mt-1 w-full rounded-lg border border-slate-300 p-2">
+        class="w-full rounded-xl border border-slate-200 p-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition">
     </div>
 
     <div>
-      <label for="saison" class="block text-sm font-medium text-slate-700">Saison</label>
-      <select id="saison" class="mt-1 w-full rounded-lg border border-slate-300 p-2">
+      <label for="saison" class="block text-sm font-semibold text-slate-700 mb-1">Saison</label>
+      <select id="saison"
+        class="w-full rounded-xl border border-slate-200 p-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition bg-white">
         <option value="1">Saison des pluies</option>
         <option value="0">Saison seche</option>
       </select>
     </div>
 
     <button id="btn" onclick="analyser()"
-      class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg">
+      class="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold py-3.5 rounded-xl shadow-md shadow-emerald-600/20 transition disabled:opacity-60 disabled:cursor-not-allowed">
       Analyser
     </button>
   </div>
 
-  <div id="resultat" class="mt-6"></div>
+  <div id="resultat" class="mt-5"></div>
 
-  <p class="mt-6 text-xs text-center text-slate-500">
+  <p class="mt-6 text-xs text-center text-slate-400 leading-relaxed">
     Outil de pre-diagnostic. Ne remplace jamais l'avis d'un professionnel de sante.
   </p>
 </div>
 
 <script>
-const API = "http://127.0.0.1:8000";
-
+const API = "";
 async function analyser() {
   const btn = document.getElementById("btn");
   const zone = document.getElementById("resultat");
@@ -120,5 +123,11 @@ function afficherErreur(message) {
     </div>`;
 }
 </script>
+<footer class="mt-8 text-center text-xs text-slate-500">
+  <p>SunuDiag - (c) 2026 Amadou Diallo</p>
+  <p>Master 1 IABD - DMI/FST/UCAD</p>
+  <p>Outil pedagogique de pre-diagnostic.
+  Ne remplace jamais l'avis d'un professionnel de sante.</p>
+</footer>
 </body>
 </html>

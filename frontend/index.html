@@ -1,185 +1,795 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SunuDiag - Pre-diagnostic du paludisme</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SunuDiag - Pré-diagnostic du paludisme</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  * {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    min-height: 100vh;
+    background: #0a0e1a;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Canvas d'arrière-plan animé */
+  #canvas-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+  }
+
+  /* Conteneur principal avec effet de profondeur */
+  .main-container {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+  }
+
+  /* Carte holographique */
+  .holographic-card {
+    position: relative;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(40px) saturate(1.8);
+    -webkit-backdrop-filter: blur(40px) saturate(1.8);
+    border-radius: 2.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 40px 120px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .holographic-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 30% 20%, rgba(20, 184, 166, 0.15), transparent 70%),
+                radial-gradient(ellipse at 70% 80%, rgba(99, 102, 241, 0.1), transparent 70%);
+    pointer-events: none;
+  }
+
+  /* Effet de bordure lumineuse animée */
+  .glow-border {
+    position: absolute;
+    inset: -2px;
+    border-radius: 2.6rem;
+    padding: 2px;
+    background: conic-gradient(from 0deg, 
+      rgba(20, 184, 166, 0.3),
+      rgba(99, 102, 241, 0.3),
+      rgba(236, 72, 153, 0.3),
+      rgba(20, 184, 166, 0.3)
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: borderSpin 6s linear infinite;
+    pointer-events: none;
+  }
+
+  @keyframes borderSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* Effet de scintillement */
+  .sparkle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 0 20px 4px rgba(20, 184, 166, 0.6);
+    animation: sparkleFloat 4s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  .sparkle:nth-child(1) { top: 20%; left: 10%; animation-delay: 0s; }
+  .sparkle:nth-child(2) { top: 60%; right: 15%; animation-delay: 1.5s; width: 6px; height: 6px; }
+  .sparkle:nth-child(3) { bottom: 30%; left: 20%; animation-delay: 3s; width: 3px; height: 3px; }
+
+  @keyframes sparkleFloat {
+    0%, 100% { opacity: 0; transform: scale(0); }
+    50% { opacity: 1; transform: scale(1); }
+  }
+
+  /* Inputs futuristes */
+  .input-futuristic {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.9);
+    padding: 0.875rem 1.25rem;
+    border-radius: 1.25rem;
+    font-size: 1rem;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    width: 100%;
+    outline: none;
+  }
+
+  .input-futuristic:focus {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(20, 184, 166, 0.4);
+    box-shadow: 0 0 40px rgba(20, 184, 166, 0.08), inset 0 0 40px rgba(20, 184, 166, 0.03);
+    transform: scale(1.02);
+  }
+
+  .input-futuristic:hover:not(:focus) {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .input-futuristic::placeholder {
+    color: rgba(255, 255, 255, 0.2);
+  }
+
+  /* Sélecteur personnalisé */
+  select.input-futuristic {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.4)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1.25rem center;
+    background-size: 1.25rem;
+    padding-right: 3rem;
+    cursor: pointer;
+  }
+
+  select.input-futuristic option {
+    background: #141b2d;
+    color: white;
+  }
+
+  /* Bouton avec effet néon */
+  .btn-neon {
+    position: relative;
+    background: linear-gradient(135deg, #14b8a6, #8b5cf6);
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 1.5rem;
+    font-weight: 700;
+    font-size: 1rem;
+    color: white;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .btn-neon::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 1.6rem;
+    padding: 2px;
+    background: conic-gradient(from 0deg, 
+      #14b8a6, #8b5cf6, #ec4899, #14b8a6
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: borderSpin 3s linear infinite;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  .btn-neon:hover:not(:disabled)::before {
+    opacity: 1;
+  }
+
+  .btn-neon:hover:not(:disabled) {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 20px 60px rgba(20, 184, 166, 0.3), 0 0 80px rgba(139, 92, 246, 0.15);
+  }
+
+  .btn-neon:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  .btn-neon:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+
+  /* Effet de vague sur le bouton */
+  .btn-ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(0);
+    animation: rippleAnim 0.8s ease-out forwards;
+    pointer-events: none;
+  }
+
+  @keyframes rippleAnim {
+    to {
+      transform: scale(4);
+      opacity: 0;
+    }
+  }
+
+  /* Résultat avec effet glassmorphism */
+  .result-glass {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(30px) saturate(1.5);
+    -webkit-backdrop-filter: blur(30px) saturate(1.5);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+    animation: resultAppear 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  }
+
+  @keyframes resultAppear {
+    from {
+      opacity: 0;
+      transform: translateY(40px) scale(0.9) rotateX(10deg);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1) rotateX(0deg);
+    }
+  }
+
+  /* Barre de progression circulaire */
+  .progress-ring {
+    position: relative;
+    width: 100px;
+    height: 100px;
+  }
+
+  .progress-ring svg {
+    transform: rotate(-90deg);
+  }
+
+  .progress-ring circle {
+    fill: none;
+    stroke-width: 6;
+    stroke-linecap: round;
+  }
+
+  .progress-ring .bg {
+    stroke: rgba(255, 255, 255, 0.05);
+  }
+
+  .progress-ring .progress {
+    stroke: url(#gradient);
+    transition: stroke-dashoffset 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* Particules interactives */
+  .particle {
+    position: fixed;
+    pointer-events: none;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(20, 184, 166, 0.3), transparent);
+    animation: particleFloat 8s ease-in-out infinite;
+    z-index: 0;
+  }
+
+  @keyframes particleFloat {
+    0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.3; }
+    25% { transform: translate(100px, -50px) scale(1.2); opacity: 0.6; }
+    50% { transform: translate(50px, -100px) scale(0.8); opacity: 0.2; }
+    75% { transform: translate(-50px, -50px) scale(1.5); opacity: 0.5; }
+  }
+
+  /* Labels lumineux */
+  .label-glow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: color 0.3s ease;
+  }
+
+  .input-futuristic:focus + .label-glow,
+  .input-futuristic:focus ~ .label-glow {
+    color: rgba(20, 184, 166, 0.8);
+  }
+
+  /* En-tête avec effet de texte gradient */
+  .gradient-text {
+    background: linear-gradient(135deg, #14b8a6, #8b5cf6, #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: textShimmer 3s ease-in-out infinite;
+    background-size: 200% 200%;
+  }
+
+  @keyframes textShimmer {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  /* Badge de statut */
+  .status-pulse {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 100px;
+    background: rgba(20, 184, 166, 0.1);
+    border: 1px solid rgba(20, 184, 166, 0.15);
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    backdrop-filter: blur(10px);
+  }
+
+  .status-dot-neon {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #14b8a6;
+    box-shadow: 0 0 20px rgba(20, 184, 166, 0.6);
+    animation: neonPulse 2s ease-in-out infinite;
+  }
+
+  @keyframes neonPulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 20px rgba(20, 184, 166, 0.6); }
+    50% { opacity: 0.4; box-shadow: 0 0 40px rgba(20, 184, 166, 0.2); }
+  }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .holographic-card {
+      border-radius: 1.5rem;
+      padding: 1.25rem !important;
+    }
+    .glow-border {
+      border-radius: 1.6rem;
+    }
+    .input-futuristic {
+      padding: 0.75rem 1rem;
+      font-size: 0.9rem;
+    }
+  }
+
+  /* Animations d'entrée */
+  .fade-in-up {
+    animation: fadeInUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    opacity: 0;
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-in-up-delay-1 { animation-delay: 0.1s; }
+  .fade-in-up-delay-2 { animation-delay: 0.2s; }
+  .fade-in-up-delay-3 { animation-delay: 0.3s; }
+  .fade-in-up-delay-4 { animation-delay: 0.4s; }
+  .fade-in-up-delay-5 { animation-delay: 0.5s; }
+</style>
 </head>
-<body class="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-8 sm:py-12">
+<body>
 
-<div class="w-full max-w-md mx-auto">
+<!-- Canvas d'arrière-plan -->
+<canvas id="canvas-bg"></canvas>
 
-  <!-- En-tete -->
-  <header class="text-center mb-6">
-    <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white border border-teal-100 shadow-lg shadow-teal-900/5 mb-3">
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v4M15 3v4M4 7h16v3a8 8 0 01-16 0V7z" />
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9 14v3a3 3 0 006 0v-3" />
-      </svg>
-    </div>
-    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">SunuDiag</h1>
-    <p class="text-teal-700 text-sm font-medium mt-1">Pre-diagnostic du paludisme</p>
-    <span class="inline-block mt-2 text-[10px] sm:text-[11px] font-semibold text-teal-700 bg-teal-100 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-      Outil clinique assiste par IA
-    </span>
-  </header>
+<!-- Particules décoratives -->
+<div class="particle" style="width: 300px; height: 300px; top: -100px; right: -100px; animation-delay: 0s;"></div>
+<div class="particle" style="width: 400px; height: 400px; bottom: -150px; left: -150px; animation-delay: -3s; background: radial-gradient(circle, rgba(139, 92, 246, 0.2), transparent);"></div>
+<div class="particle" style="width: 200px; height: 200px; top: 50%; left: 50%; transform: translate(-50%, -50%); animation-delay: -6s; background: radial-gradient(circle, rgba(236, 72, 153, 0.15), transparent);"></div>
 
-  <!-- Icone stethoscope, juste avant le formulaire -->
-  <div class="flex justify-center -mb-5 relative z-10">
-    <div class="w-12 h-12 rounded-full bg-teal-600 border-4 border-slate-50 shadow-md flex items-center justify-center">
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 4.5v6a4.5 4.5 0 009 0v-3M13.5 4.5v3m0 0a3 3 0 013 3v1.5a6 6 0 01-6 6h0a6 6 0 01-6-6" />
-        <circle cx="19.5" cy="8.25" r="1.5" stroke-width="1.8" />
-      </svg>
-    </div>
-  </div>
+<div class="main-container">
 
-  <!-- Carte principale -->
-  <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/70 border border-slate-100 overflow-hidden pt-6">
+  <div class="w-full max-w-xl">
 
-    <!-- Bandeau "fiche patient" -->
-    <div class="bg-teal-600 px-5 sm:px-6 py-3 flex items-center gap-2 mx-5 sm:mx-6 rounded-xl">
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-      </svg>
-      <p class="text-white text-xs font-semibold uppercase tracking-wide">Fiche patient</p>
-    </div>
-
-    <div class="p-5 sm:p-6 space-y-4 sm:space-y-5">
-
-      <div>
-        <label for="age" class="flex items-center gap-1.5 text-sm font-semibold text-slate-700 mb-1">
-          <span aria-hidden="true">🧑</span> Age (annees)
-        </label>
-        <input type="number" id="age" value="34"
-          class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-slate-800 text-base focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent focus:bg-white transition">
-      </div>
-
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label for="fievre" class="flex items-center gap-1.5 text-sm font-semibold text-slate-700 mb-1">
-            <span aria-hidden="true">🌡️</span> Fievre (C)
-          </label>
-          <input type="number" id="fievre" step="0.1" value="39.2"
-            class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-slate-800 text-base focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent focus:bg-white transition">
+    <!-- En-tête -->
+    <header class="text-center mb-10 fade-in-up">
+      <div class="relative inline-block">
+        <div class="w-24 h-24 rounded-3xl bg-gradient-to-br from-teal-500/20 to-purple-500/20 backdrop-blur-xl border border-white/10 flex items-center justify-center mx-auto shadow-2xl shadow-teal-500/20">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-white/90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v4M15 3v4M4 7h16v3a8 8 0 01-16 0V7z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 14v3a3 3 0 006 0v-3" />
+          </svg>
+          <div class="absolute -inset-1 rounded-3xl bg-gradient-to-br from-teal-500/20 to-purple-500/20 blur-xl -z-10"></div>
         </div>
-
-        <div>
-          <label for="glycemie" class="flex items-center gap-1.5 text-sm font-semibold text-slate-700 mb-1">
-            <span aria-hidden="true">🩸</span> Glycemie
-          </label>
-          <input type="number" id="glycemie" step="0.1" value="5.8"
-            class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-slate-800 text-base focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent focus:bg-white transition">
+        <div class="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-gradient-to-br from-teal-400 to-purple-400 shadow-lg shadow-teal-500/30 flex items-center justify-center border-2 border-white/20">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+          </svg>
         </div>
       </div>
 
-      <div>
-        <label for="hemoglobine" class="flex items-center gap-1.5 text-sm font-semibold text-slate-700 mb-1">
-          <span aria-hidden="true">💉</span> Hemoglobine (g/dL)
-        </label>
-        <input type="number" id="hemoglobine" step="0.1" value="13.1"
-          class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-slate-800 text-base focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent focus:bg-white transition">
+      <h1 class="text-5xl sm:text-6xl font-extrabold mt-6 tracking-tight">
+        <span class="text-white">Sunu</span><span class="gradient-text">Diag</span>
+      </h1>
+
+      <div class="flex items-center justify-center gap-3 mt-3 flex-wrap">
+        <span class="text-sm font-medium text-white/40">Pré-diagnostic du paludisme</span>
+        <span class="status-pulse">
+          <span class="status-dot-neon"></span>
+          IA active
+        </span>
       </div>
 
-      <div>
-        <label for="saison" class="flex items-center gap-1.5 text-sm font-semibold text-slate-700 mb-1">
-          <span aria-hidden="true">🌦️</span> Saison
-        </label>
-        <select id="saison"
-          class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-slate-800 text-base focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent focus:bg-white transition">
-          <option value="1">Saison des pluies</option>
-          <option value="0">Saison seche</option>
-        </select>
+      <div class="flex items-center justify-center gap-2 mt-4">
+        <span class="text-[10px] font-bold text-teal-400/60 bg-teal-400/5 px-3 py-1.5 rounded-full border border-teal-400/10 backdrop-blur-sm uppercase tracking-wider">
+          ⚕️ Clinique
+        </span>
+        <span class="text-[10px] font-bold text-purple-400/60 bg-purple-400/5 px-3 py-1.5 rounded-full border border-purple-400/10 backdrop-blur-sm uppercase tracking-wider">
+          v3.0
+        </span>
+        <span class="text-[10px] font-bold text-pink-400/60 bg-pink-400/5 px-3 py-1.5 rounded-full border border-pink-400/10 backdrop-blur-sm uppercase tracking-wider">
+          🔬 IA
+        </span>
+      </div>
+    </header>
+
+    <!-- Carte principale -->
+    <div class="holographic-card p-8 sm:p-10 fade-in-up fade-in-up-delay-1">
+      <div class="glow-border"></div>
+      <div class="sparkle"></div>
+      <div class="sparkle"></div>
+      <div class="sparkle"></div>
+
+      <!-- En-tête de la carte -->
+      <div class="flex items-center justify-between mb-8 pb-4 border-b border-white/5">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-teal-500/10 to-purple-500/10 border border-white/5 flex items-center justify-center backdrop-blur-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-bold text-white/80">Fiche Patient</p>
+            <p class="text-xs text-white/30 font-medium">Paramètres cliniques</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-lg shadow-emerald-400/50"></span>
+          <span class="text-[10px] font-medium text-white/30">Live</span>
+        </div>
       </div>
 
-      <button id="btn" onclick="analyser()"
-        class="w-full bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white font-semibold py-3.5 rounded-xl shadow-md shadow-teal-600/25 transition disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-        </svg>
-        Analyser
-      </button>
+      <!-- Formulaire -->
+      <div class="space-y-4">
+
+        <!-- Âge -->
+        <div>
+          <label for="age" class="label-glow mb-1.5 block">
+            <span>🧑</span> Âge <span class="text-white/20 font-normal">(années)</span>
+          </label>
+          <input type="number" id="age" value="34" placeholder="Entrez l'âge"
+            class="input-futuristic" />
+        </div>
+
+        <!-- Grille 2 colonnes -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="fievre" class="label-glow mb-1.5 block">
+              <span>🌡️</span> Fièvre <span class="text-white/20 font-normal">(°C)</span>
+            </label>
+            <input type="number" id="fievre" step="0.1" value="39.2" placeholder="38.5"
+              class="input-futuristic" />
+          </div>
+
+          <div>
+            <label for="glycemie" class="label-glow mb-1.5 block">
+              <span>🩸</span> Glycémie
+            </label>
+            <input type="number" id="glycemie" step="0.1" value="5.8" placeholder="5.0"
+              class="input-futuristic" />
+          </div>
+        </div>
+
+        <!-- Hémoglobine -->
+        <div>
+          <label for="hemoglobine" class="label-glow mb-1.5 block">
+            <span>💉</span> Hémoglobine <span class="text-white/20 font-normal">(g/dL)</span>
+          </label>
+          <input type="number" id="hemoglobine" step="0.1" value="13.1" placeholder="12.0"
+            class="input-futuristic" />
+        </div>
+
+        <!-- Saison -->
+        <div>
+          <label for="saison" class="label-glow mb-1.5 block">
+            <span>🌦️</span> Saison
+          </label>
+          <select id="saison" class="input-futuristic">
+            <option value="1">☔ Saison des pluies</option>
+            <option value="0">☀️ Saison sèche</option>
+          </select>
+        </div>
+
+        <!-- Bouton -->
+        <button id="btn" onclick="analyser(event)"
+          class="btn-neon mt-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+          </svg>
+          <span id="btnText">Lancer l'analyse</span>
+        </button>
+      </div>
     </div>
-  </div>
 
-  <!-- Resultat -->
-  <div id="resultat" class="mt-5"></div>
+    <!-- Résultat -->
+    <div id="resultat" class="mt-6"></div>
 
-  <!-- Avertissement -->
-  <div class="mt-6 flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl p-3">
-    <span class="text-amber-500 text-sm mt-0.5" aria-hidden="true">⚠️</span>
-    <p class="text-xs text-amber-800 leading-relaxed">
-      Outil de pre-diagnostic. Ne remplace jamais l'avis d'un professionnel de sante.
-    </p>
+    <!-- Avertissement -->
+    <div class="mt-8 flex items-start gap-3 bg-white/5 backdrop-blur-xl border border-white/5 rounded-2xl p-4 fade-in-up fade-in-up-delay-2">
+      <div class="flex-shrink-0 mt-0.5 text-xl">💡</div>
+      <div>
+        <p class="text-xs font-semibold text-white/60 leading-relaxed">
+          Outil de pré-diagnostic assisté par IA
+        </p>
+        <p class="text-[11px] text-white/30 leading-relaxed">
+          Ne remplace jamais l'avis d'un professionnel de santé.
+        </p>
+      </div>
+    </div>
   </div>
 </div>
 
+<!-- Footer -->
+<footer class="relative z-10 mt-12 text-center pb-8">
+  <div class="flex flex-wrap items-center justify-center gap-4 text-[11px] text-white/20">
+    <span class="font-semibold text-white/30">SunuDiag</span>
+    <span class="w-px h-4 bg-white/10"></span>
+    <span>© 2026 Amadou Diallo</span>
+    <span class="w-px h-4 bg-white/10"></span>
+    <span>M1 IABD · DMI · UCAD</span>
+  </div>
+  <p class="mt-2 text-[10px] text-white/10 flex items-center justify-center gap-2">
+    <span class="w-1.5 h-1.5 rounded-full bg-teal-400/30"></span>
+    Intelligence artificielle clinique
+    <span class="w-1.5 h-1.5 rounded-full bg-teal-400/30"></span>
+  </p>
+</footer>
+
 <script>
-const API = "";
-async function analyser() {
-  const btn = document.getElementById("btn");
-  const zone = document.getElementById("resultat");
-  btn.disabled = true;
-  btn.textContent = "Analyse en cours...";
-  zone.innerHTML = "";
+  // === ANIMATION DU CANVAS ===
+  const canvas = document.getElementById('canvas-bg');
+  const ctx = canvas.getContext('2d');
 
-  const patient = {
-    age: parseInt(document.getElementById("age").value),
-    glycemie: parseFloat(document.getElementById("glycemie").value),
-    hemoglobine: parseFloat(document.getElementById("hemoglobine").value),
-    fievre: parseFloat(document.getElementById("fievre").value),
-    saison: parseInt(document.getElementById("saison").value)
-  };
+  let w, h;
+  const particles = [];
+  const numParticles = 80;
 
-  try {
-    const reponse = await fetch(API + "/predict", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(patient)
-    });
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
 
-    if (!reponse.ok) {
-      afficherErreur("Donnees invalides (code " + reponse.status + ").");
-      return;
+  class Particle {
+    constructor() {
+      this.reset();
+    }
+    reset() {
+      this.x = Math.random() * w;
+      this.y = Math.random() * h;
+      this.size = Math.random() * 2 + 0.5;
+      this.speedX = (Math.random() - 0.5) * 0.3;
+      this.speedY = (Math.random() - 0.5) * 0.3;
+      this.opacity = Math.random() * 0.5 + 0.1;
+    }
+    update() {
+      this.x += this.speedX;
+      this.y += this.speedY;
+      if (this.x < 0 || this.x > w || this.y < 0 || this.y > h) this.reset();
+    }
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(20, 184, 166, ${this.opacity})`;
+      ctx.fill();
+    }
+  }
+
+  for (let i = 0; i < numParticles; i++) {
+    particles.push(new Particle());
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, w, h);
+
+    // Lignes entre particules proches
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 150) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(20, 184, 166, ${0.06 * (1 - dist / 150)})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
     }
 
-    const data = await reponse.json();
-    afficherResultat(data);
-  } catch (e) {
-    afficherErreur("API injoignable. Le serveur est-il lance ?");
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "Analyser";
+    particles.forEach(p => {
+      p.update();
+      p.draw();
+    });
+
+    requestAnimationFrame(animate);
   }
-}
+  animate();
 
-function afficherResultat(data) {
-  const p = data.probabilite_paludisme;
-  let couleur = "bg-green-100 border-green-500 text-green-800";
-  if (p >= 0.5) couleur = "bg-red-100 border-red-500 text-red-800";
-  else if (p >= 0.3) couleur = "bg-orange-100 border-orange-500 text-orange-800";
+  // === LOGIQUE DE L'APPLICATION ===
+  const API = "";
 
-  document.getElementById("resultat").innerHTML = `
-    <div class="border-l-4 rounded-lg p-4 ${couleur}">
-      <p class="text-sm">Probabilite de paludisme</p>
-      <p class="text-4xl font-bold">${(p * 100).toFixed(1)}%</p>
-      <p class="mt-2 font-semibold">${data.pre_diagnostic}</p>
-    </div>`;
-}
+  async function analyser(e) {
+    const btn = document.getElementById("btn");
+    const btnText = document.getElementById("btnText");
+    const zone = document.getElementById("resultat");
 
-function afficherErreur(message) {
-  document.getElementById("resultat").innerHTML = `
-    <div class="border-l-4 border-slate-500 bg-slate-100 rounded-lg p-4 text-slate-700">
-      <p>${message}</p>
-    </div>`;
-}
+    // Effet ripple
+    if (e) {
+      const rect = btn.getBoundingClientRect();
+      const ripple = document.createElement('span');
+      ripple.className = 'btn-ripple';
+      const size = Math.max(rect.width, rect.height);
+      ripple.style.width = ripple.style.height = size + 'px';
+      ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+      ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+      btn.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 800);
+    }
+
+    btn.disabled = true;
+    btnText.textContent = "🔮 Analyse en cours...";
+    zone.innerHTML = "";
+
+    const patient = {
+      age: parseInt(document.getElementById("age").value),
+      glycemie: parseFloat(document.getElementById("glycemie").value),
+      hemoglobine: parseFloat(document.getElementById("hemoglobine").value),
+      fievre: parseFloat(document.getElementById("fievre").value),
+      saison: parseInt(document.getElementById("saison").value)
+    };
+
+    try {
+      const reponse = await fetch(API + "/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(patient)
+      });
+
+      if (!reponse.ok) {
+        afficherErreur("Données invalides (code " + reponse.status + ").");
+        return;
+      }
+
+      const data = await reponse.json();
+      afficherResultat(data);
+    } catch (e) {
+      afficherErreur("API injoignable. Le serveur est-il lancé ?");
+    } finally {
+      btn.disabled = false;
+      btnText.textContent = "Lancer l'analyse";
+    }
+  }
+
+  function afficherResultat(data) {
+    const p = data.probabilite_paludisme;
+    let niveau, couleur, icone, bg, grad;
+
+    if (p >= 0.5) {
+      niveau = "Élevé";
+      couleur = "text-red-400";
+      icone = "🔴";
+      bg = "bg-red-500/5 border-red-500/10";
+      grad = "red";
+    } else if (p >= 0.3) {
+      niveau = "Modéré";
+      couleur = "text-orange-400";
+      icone = "🟠";
+      bg = "bg-orange-500/5 border-orange-500/10";
+      grad = "orange";
+    } else {
+      niveau = "Faible";
+      couleur = "text-emerald-400";
+      icone = "🟢";
+      bg = "bg-emerald-500/5 border-emerald-500/10";
+      grad = "green";
+    }
+
+    const percentage = (p * 100).toFixed(1);
+    const circumference = 2 * Math.PI * 42;
+    const offset = circumference - (p * circumference);
+
+    document.getElementById("resultat").innerHTML = `
+      <div class="result-glass ${bg}">
+        <div class="flex flex-col sm:flex-row items-center gap-6">
+          <!-- Anneau de progression -->
+          <div class="progress-ring flex-shrink-0">
+            <svg width="100" height="100">
+              <defs>
+                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#14b8a6" />
+                  <stop offset="50%" stop-color="#8b5cf6" />
+                  <stop offset="100%" stop-color="#ec4899" />
+                </linearGradient>
+              </defs>
+              <circle class="bg" cx="50" cy="50" r="42" />
+              <circle class="progress" cx="50" cy="50" r="42"
+                stroke-dasharray="${circumference}"
+                stroke-dashoffset="${offset}" />
+            </svg>
+            <div class="absolute inset-0 flex items-center justify-center flex-col">
+              <span class="text-2xl font-bold text-white">${percentage}%</span>
+              <span class="text-[9px] text-white/30 uppercase tracking-wider">Risque</span>
+            </div>
+          </div>
+
+          <!-- Informations -->
+          <div class="flex-1 text-center sm:text-left">
+            <div class="flex items-center justify-center sm:justify-start gap-2">
+              <span class="text-2xl">${icone}</span>
+              <span class="text-xl font-bold ${couleur}">Niveau ${niveau}</span>
+            </div>
+            <p class="text-sm font-bold text-white/80 mt-1">${data.pre_diagnostic}</p>
+            <p class="text-xs text-white/40 mt-1.5">
+              ${p >= 0.5 ? '⚠️ Consultation urgente recommandée' : 
+                p >= 0.3 ? '⚡ Surveillance médicale conseillée' : 
+                '✅ Pas d\'alerte immédiate'}
+            </p>
+            <div class="flex items-center gap-2 mt-3 pt-3 border-t border-white/5">
+              <span class="text-[10px] text-white/30">🔬 Analyse IA</span>
+              <span class="w-1 h-1 rounded-full bg-white/10"></span>
+              <span class="text-[10px] text-white/30">${new Date().toLocaleTimeString()}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function afficherErreur(message) {
+    document.getElementById("resultat").innerHTML = `
+      <div class="result-glass bg-red-500/5 border-red-500/10">
+        <div class="flex items-start gap-4">
+          <span class="text-3xl">🚨</span>
+          <div>
+            <p class="font-bold text-sm text-white/80">Erreur de communication</p>
+            <p class="text-sm text-white/60">${message}</p>
+            <p class="text-xs text-white/30 mt-2">🔌 Vérifiez votre connexion au serveur</p>
+          </div>
+        </div>
+      </div>
+    `;
+  }
 </script>
-
-<footer class="mt-8 text-center text-xs text-slate-400">
-  <p>SunuDiag - (c) 2026 Amadou Diallo</p>
-  <p>Master 1 IABD - DMI/FST/UCAD</p>
-</footer>
 
 </body>
 </html>
